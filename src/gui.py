@@ -2,9 +2,9 @@
 
 import tkinter as tk
 
-from commands import execute
+from commands import PROMPT, execute
+from script import run_script
 
-PROMPT = "$ "
 FONT = ("Consolas", 11)
 
 
@@ -33,6 +33,21 @@ class ShellWindow:
         self.output.see("end")
         self.output.configure(state="disabled")
 
+    def write_lines(self, lines):
+        """Выводит несколько строк."""
+        for line in lines:
+            self.write(line + "\n")
+
+    def close_if_exited(self):
+        """Закрывает окно, если была выполнена exit."""
+        if not self.state["running"]:
+            self.root.destroy()
+
+    def run_startup(self, path):
+        """Выполняет стартовый скрипт в окне."""
+        self.write_lines(run_script(path, self.state))
+        self.close_if_exited()
+
     def on_enter(self, event):
         """Обрабатывает введённую строку."""
         line = self.entry.get()
@@ -41,5 +56,4 @@ class ShellWindow:
         result = execute(line, self.state)
         if result:
             self.write(result + "\n")
-        if not self.state["running"]:
-            self.root.destroy()
+        self.close_if_exited()

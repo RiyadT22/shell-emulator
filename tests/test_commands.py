@@ -1,4 +1,6 @@
-from commands import execute, new_state, parse
+from commands import (
+    STATUS_ERROR, STATUS_NOT_FOUND, STATUS_OK, execute, new_state, parse,
+)
 
 
 def test_parse_splits_by_spaces():
@@ -37,7 +39,7 @@ def test_exit_stops_shell():
     state = new_state()
     assert execute("exit", state) == ""
     assert state["running"] is False
-    assert state["exit_code"] == 0
+    assert state["exit_code"] == STATUS_OK
 
 
 def test_exit_with_code():
@@ -61,3 +63,21 @@ def test_exit_too_many_args():
 
 def test_vfs_name_in_state():
     assert new_state("myfs")["vfs_name"] == "myfs"
+
+
+def test_status_ok():
+    state = new_state()
+    execute("ls", state)
+    assert state["status"] == STATUS_OK
+
+
+def test_status_error():
+    state = new_state()
+    execute("cd a b", state)
+    assert state["status"] == STATUS_ERROR
+
+
+def test_status_not_found():
+    state = new_state()
+    execute("nope", state)
+    assert state["status"] == STATUS_NOT_FOUND

@@ -1,8 +1,12 @@
 """Разбор ввода и команды эмулятора."""
 
 DEFAULT_VFS_NAME = "vfs"
+PROMPT = "$ "
 MAX_CD_ARGS = 1
 MAX_EXIT_ARGS = 1
+STATUS_OK = 0
+STATUS_ERROR = 1
+STATUS_NOT_FOUND = 127
 
 
 class ShellError(Exception):
@@ -11,7 +15,12 @@ class ShellError(Exception):
 
 def new_state(vfs_name=DEFAULT_VFS_NAME):
     """Создаёт начальное состояние эмулятора."""
-    return {"vfs_name": vfs_name, "running": True, "exit_code": 0}
+    return {
+        "vfs_name": vfs_name,
+        "running": True,
+        "exit_code": STATUS_OK,
+        "status": STATUS_OK,
+    }
 
 
 def parse(line):
@@ -38,7 +47,7 @@ def cmd_exit(args, state):
     """Завершает работу эмулятора с кодом из аргумента."""
     if len(args) > MAX_EXIT_ARGS:
         raise ShellError("exit: too many arguments")
-    code = 0
+    code = STATUS_OK
     if args:
         try:
             code = int(args[0])
@@ -59,14 +68,17 @@ COMMANDS = {
 
 
 def execute(line, state):
-    """Выполняет одну строку ввода и возвращает текст для вывода."""
+    """Выполняет строку ввода, ставит state["status"] и возвращает вывод."""
     name, args = parse(line)
+    state["status"] = STATUS_OK
     if name is None:
         return ""
     command = COMMANDS.get(name)
     if command is None:
+        state["status"] = STATUS_NOT_FOUND
         return f"{name}: command not found"
     try:
         return command(args, state)
     except ShellError as error:
+        state["status"] = STATUS_ERROR
         return str(error)
