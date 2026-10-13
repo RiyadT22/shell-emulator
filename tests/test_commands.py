@@ -2,6 +2,8 @@ from commands import (
     STATUS_ERROR, STATUS_NOT_FOUND, STATUS_OK, execute, new_state, parse,
 )
 
+EXIT_CODE = 3
+
 
 def test_parse_splits_by_spaces():
     assert parse("ls  -l   /home") == ("ls", ["-l", "/home"])
@@ -44,8 +46,8 @@ def test_exit_stops_shell():
 
 def test_exit_with_code():
     state = new_state()
-    execute("exit 3", state)
-    assert state["exit_code"] == 3
+    execute(f"exit {EXIT_CODE}", state)
+    assert state["exit_code"] == EXIT_CODE
 
 
 def test_exit_bad_code():

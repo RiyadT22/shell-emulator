@@ -1,6 +1,8 @@
 from commands import new_state
 from script import run_script, strip_comment
 
+EXIT_CODE = 2
+
 
 def write(tmp_path, text):
     path = tmp_path / "start.txt"
@@ -32,11 +34,11 @@ def test_error_has_line_number_and_script_goes_on(tmp_path):
 
 
 def test_exit_stops_script(tmp_path):
-    path = write(tmp_path, "exit 2\nls\n")
+    path = write(tmp_path, f"exit {EXIT_CODE}\nls\n")
     state = new_state()
-    assert run_script(path, state) == ["$ exit 2"]
+    assert run_script(path, state) == [f"$ exit {EXIT_CODE}"]
     assert state["running"] is False
-    assert state["exit_code"] == 2
+    assert state["exit_code"] == EXIT_CODE
 
 
 def test_missing_script(tmp_path):
